@@ -17,7 +17,7 @@ typedef struct Simulacron {
   bool evaluated;        // whether this simulacron has been evaluated
   
   long threshold;        // inverse the probability of failure. Used for rand()
-
+  
   // used for advanced simulation
   double probability;    // probability from leaf
    
@@ -30,8 +30,7 @@ List * leaf_simulacrons;      // all leaf simulacrons (for advanced Monte Carlo)
 
 void prepare_tree(Node * root, bool simulating);
 
-void monte_carlo(Node * root, long trials);
-double monte_carlo_advanced(Node * root, long trials);
+double monte_carlo(Node * root, long trials);
 
 double exaustive_calculation(Node * root);
 

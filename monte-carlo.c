@@ -18,7 +18,7 @@ Simulacron * create_simulacron(Node * node, bool simulating) {
   simulacron -> trials    = 0;
   simulacron -> failed    = false;
   simulacron -> evaluated = false;
-  simulacron -> probability = 0.0;    // for branches, this grows (only used for advanced simulations)
+  simulacron -> probability = 0.0;    // this grows for branches
   
   if (node -> leaf) {
     simulacron -> threshold = (long) (1.0 / node -> probability);
@@ -68,63 +68,6 @@ void prepare_tree(Node * parent, bool simulating) {
   }
 }
 
-void monte_trial(Node * parent) {
-  // recursively accomplishes a Monte Carlo trial.
-  // each leaf is assigned failure with it's designated probability, with
-  // branches failing via a function of their children.
-  
-  // note that this means the vast, vast majority of trials won't result in failure.
-  // for this reason, other methods should be considered that simulate differently.
-  
-  Simulacron * simulacron = parent -> simulacron;
-  
-  if (parent -> leaf) {
-
-    if (simulacron -> evaluated) return;    // we've already done this node
-    
-    bool node_fails = ((rand() % (simulacron -> threshold)) == 0);
-    
-    if (node_fails) {
-      simulacron -> failed = true;
-      simulacron -> failures++;
-    }
-    
-    simulacron -> evaluated = true;    // this isn't checked for non-leaves btw
-    simulacron -> trials++;
-    return;
-  }
-
-  simulacron -> trials++;
-  
-  int child_failures = 0;
-  
-  for (Node * child = parent -> children -> head; child; child = child -> next) {
-    
-    monte_trial(child);
-    
-    if (child -> simulacron -> failed) child_failures++;
-  }
-  
-  if (parent -> gate == or_gate) {
-    // OR gate, so if any child failed, this one failed
-    
-    if (child_failures) {
-      simulacron -> failed = true;
-      simulacron -> failures++;
-      return;
-    }
-  }
-  if (parent -> gate == and_gate) {
-    // AND gate, so all need to have failed for this one to fail
-
-    if (child_failures == parent -> children -> elements) {
-      simulacron -> failed = true;
-      simulacron -> failures++;
-      return;
-    }
-  }
-}
-
 void monte_clean(Node * parent) {
   
   parent -> simulacron -> failed    = false;
@@ -135,36 +78,6 @@ void monte_clean(Node * parent) {
   for (Node * child = parent -> children -> head; child; child = child -> next)
     monte_clean(child);
 }
-
-void monte_print(Node * parent) {
-
-  double percent_failed = (double) (parent -> simulacron -> failures) / (parent -> simulacron -> trials);
-  
-  if (parent -> leaf) {
-    for (int i = 0; i < parent -> level; i++) printf("\t");
-    printf("%E                %s\n", percent_failed, parent -> name);
-    return;
-  }
-  
-  for (Node * child = parent -> children -> head; child; child = child -> next) {
-    monte_print(child);
-  }
-  
-  for (int i = 0; i < parent -> level; i++) printf("\t");
-  printf("%E                %s\n", percent_failed, parent -> name);
-}
-
-void monte_carlo(Node * root, long trials) {
-  
-  for (long t = 0; t < trials; t++) {
-    monte_trial(root);
-    monte_clean(root);
-  }
-  
-  monte_print(root);
-}
-
-
 
 
 double trial_select() {
@@ -186,7 +99,7 @@ double trial_select() {
   return trial_likelihood;
 }
 
-void monte_advanced_walk(Node * parent, double trial_likelihood) {
+void monte_walk(Node * parent, double trial_likelihood) {
   // walks the tree, updating probabilities considering the trial likelihood
   
   if (parent -> leaf) return;    // nodes have been already given states from trial_select()
@@ -196,7 +109,7 @@ void monte_advanced_walk(Node * parent, double trial_likelihood) {
   
   for (Node * child = parent -> children -> head; child; child = child -> next) {
     
-    monte_advanced_walk(child, trial_likelihood);
+    monte_walk(child, trial_likelihood);
     
     if (child -> simulacron -> failed) child_failures++;
   }
@@ -220,7 +133,7 @@ void monte_advanced_walk(Node * parent, double trial_likelihood) {
   }
 }
 
-void monte_advanced_print(Node * parent, double integral) {
+void monte_print(Node * parent, double integral) {
   
   if (parent -> leaf) {
     for (int i = 0; i < parent -> level; i++) printf("\t");
@@ -229,7 +142,7 @@ void monte_advanced_print(Node * parent, double integral) {
   }
   
   for (Node * child = parent -> children -> head; child; child = child -> next) {
-    monte_advanced_print(child, integral);
+    monte_print(child, integral);
   }
   
   double percent_failed = (parent -> simulacron -> probability) / integral;
@@ -239,7 +152,7 @@ void monte_advanced_print(Node * parent, double integral) {
 }
 
 
-double monte_carlo_advanced(Node * root, long trials) {
+double monte_carlo(Node * root, long trials) {
   
   double likelihood_integral = 0.0;
   
@@ -247,14 +160,14 @@ double monte_carlo_advanced(Node * root, long trials) {
     
     double trial_likelihood = trial_select();    // has side effect of picking states
     
-    monte_advanced_walk(root, trial_likelihood);
+    monte_walk(root, trial_likelihood);
 
     likelihood_integral += trial_likelihood;
 
     monte_clean(root);
   }
   
-  monte_advanced_print(root, likelihood_integral);
+  monte_print(root, likelihood_integral);
 
   return (root -> simulacron -> probability) / likelihood_integral;
 }
@@ -282,15 +195,13 @@ double exaustive_calculation(Node * root) {
       trial_likelihood *= (sim -> failed) * (sim -> probability) + (!sim -> failed) * (1 - sim -> probability);
     }
     
-    monte_advanced_walk(root, trial_likelihood);
+    monte_walk(root, trial_likelihood);
 
     monte_clean(root);
     
   }
   
-  monte_advanced_print(root, 1.0);
-
-  
+  monte_print(root, 1.0);
   
   return (root -> simulacron -> probability);
 }

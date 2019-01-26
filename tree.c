@@ -76,7 +76,7 @@ void dependent_evaluation(Node * root, long trials) {
   
   printf("\nSimulation will use %ld trials\n", trials);
   
-  double mission_failure_probability = monte_carlo_advanced(root, trials);
+  double mission_failure_probability = monte_carlo(root, trials);
   
   printf("\nMission failure probability: " CONSOLE_RED "%E\n" CONSOLE_RESET, mission_failure_probability);
   
@@ -119,13 +119,16 @@ int main() {
                                        )
                             );
   
-  name_branches(root, 0);    // give names to branches
+  
+  // give names to branches
+  name_branches(root, 0);
+  
   
   // evaluate assuming leaves are independent
   independent_evaluation(root);
   
   // run a Monte Carlo simulation
-  dependent_evaluation(root, 1E4);
+  dependent_evaluation(root, 1E4);    // number of trials
   
   // calculate true probabilities exaustively
   true_evaluation(root);
