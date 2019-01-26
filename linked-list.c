@@ -2,9 +2,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 #include <stdarg.h>
 
 #include "linked-list.h"
+#include "hashmap.h"
+
+#include "monte-carlo.h"
+#include "colors.h"
 
 
 Node * create_node(Gate gate, List * children) {
@@ -17,24 +23,41 @@ Node * create_node(Gate gate, List * children) {
   node -> parent   = NULL;
   node -> next     = NULL;
   
+  node -> leaf = false;
+  
   node -> probability = 0;
   
   return node;
 }
 
 Node * create_leaf(char * name, double probability) {
-
+  
   Node * node = malloc(sizeof(Node));
-
+  
   node -> probability = probability;
   node -> name = name;
+  
+  node -> leaf = true;
 
   node -> children = NULL;
   node -> parent = NULL;
   node -> next = NULL;
-
+  node -> simulacron = NULL;
+  
   node -> gate = NULL;
   
+  return node;
+}
+
+Node * create_basic_node(void * value) {
+  // creates a basic node consisting of a value and a next pointer
+  // this is useful for creating hashmaps
+  
+  Node * node = malloc(sizeof(Node));
+
+  node -> value = value;
+  node -> next = NULL;
+
   return node;
 }
 
@@ -79,4 +102,27 @@ List * w_children(unsigned int vargs, ...) {
   va_end(argPointer);
 
   return list;
+}
+
+void name_branches(Node * parent, int level) {
+
+  parent -> level = level;    // stack get's level in tree
+  
+  List * list = parent -> children;
+
+  if (!list) return;    // node is a leaf, so it already has a name
+  
+  char name_buffer[1024];
+  name_buffer[0] = '\0';
+  
+  for (Node * child = list -> head; child; child = child -> next) {
+    name_branches(child, level + 1);
+
+    if (name_buffer[0] == '\0') sprintf(name_buffer, "%s"   ,              child -> name);
+    else                        sprintf(name_buffer, "%s-%s", name_buffer, child -> name);
+    
+  }
+  
+  parent -> name = strdup(name_buffer);
+  
 }
