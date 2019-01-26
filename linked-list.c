@@ -39,12 +39,11 @@ Node * create_leaf(char * name, double probability) {
   
   node -> leaf = true;
 
-  node -> children = NULL;
-  node -> parent = NULL;
-  node -> next = NULL;
+  node -> children   = NULL;
+  node -> parent     = NULL;
+  node -> next       = NULL;
   node -> simulacron = NULL;
-  
-  node -> gate = NULL;
+  node -> gate       = NULL;
   
   return node;
 }
@@ -56,7 +55,7 @@ Node * create_basic_node(void * value) {
   Node * node = malloc(sizeof(Node));
 
   node -> value = value;
-  node -> next = NULL;
+  node -> next  = NULL;
 
   return node;
 }
@@ -105,6 +104,9 @@ List * w_children(unsigned int vargs, ...) {
 }
 
 void name_branches(Node * parent, int level) {
+  // recursively names the branches of the tree while assigning them levels.
+  // this is useful for printing the tree out in a meaningful manner, as spacing
+  // can be used to denote the heigherarchy.
 
   parent -> level = level;    // stack get's level in tree
   
@@ -124,5 +126,4 @@ void name_branches(Node * parent, int level) {
   }
   
   parent -> name = strdup(name_buffer);
-  
 }

@@ -34,11 +34,9 @@ typedef struct Hashmap {
 
 Hashmap * create_hashmap(hash_function hash, key_comparator key_diff, int expected_size);
 
-int hash_string  (void *  string, int upper_bound);    // (char *, int)
-int hash_address (void * address, int upper_bound);    // (void *, int)
+int hash_string(void *  string, int upper_bound);    // (char *, int)
 
-int compare_strings  (void * first, void * other);    // (char *, char *)
-int compare_addresses(void * first, void * other);    // (void *, void *)
+int compare_strings(void * first, void * other);     // (char *, char *)
 
 void * hashmap_get   (Hashmap * this, void * key);
 void   hashmap_add   (Hashmap * this, void * key, void * datum);

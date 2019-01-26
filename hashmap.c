@@ -49,24 +49,8 @@ int hash_string(void * string, int upper_bound) {
   return abs(hx) % upper_bound;
 }
 
-int hash_address(void * address, int upper_bound) {
-  // Hashes an address into a range
-  
-  int hx = (int) ((long) address);
-
-  hx = ((hx >> 16) ^ hx) * 0x119de1f3;
-  hx = ((hx >> 16) ^ hx) * 0x119de1f3;
-  hx = ((hx >> 16) ^ hx);
-  
-  return hx % upper_bound;
-}
-
 int compare_strings(void * first, void * other) {
   return strcmp(first, other);
-}
-
-int compare_addresses(void * first, void * other) {
-  return (int) (first != other);
 }
 
 void * hashmap_get(Hashmap * this, void * key) {
@@ -143,6 +127,5 @@ void init_hashmap() {
 
   simulation = create_hashmap(hash_string, compare_strings, 16);
   
-  
-  
+  leaf_simulacrons = create_list();
 }

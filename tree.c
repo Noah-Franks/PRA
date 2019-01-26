@@ -69,13 +69,31 @@ void independent_evaluation(Node * root) {
 }
 
 void dependent_evaluation(Node * root, long trials) {
+  
   printf("Discovering failure rates assuming leaves are dependent\n\n");
-  prepare_for_simulation(root);
+  
+  prepare_tree(root, true);
+  
   printf("\nSimulation will use %ld trials\n", trials);
   
-  monte_carlo(root, trials);
+  double mission_failure_probability = monte_carlo_advanced(root, trials);
+  
+  printf("\nMission failure probability: " CONSOLE_RED "%E\n" CONSOLE_RESET, mission_failure_probability);
   
   printf("\n\n");
+}
+
+void true_evaluation(Node * root) {
+  
+  printf("Exaustively calculating true probabilities\n\n");
+  printf("Bottom of tree\n\n");
+  
+  prepare_tree(root, false);
+  
+  double mission_failure_probability = exaustive_calculation(root);
+
+  printf("Top of tree\n\n");
+  printf("\nMission failure probability: " CONSOLE_RED "%E\n" CONSOLE_RESET, mission_failure_probability);
 }
 
 int main() {
@@ -88,14 +106,14 @@ int main() {
                                        create_node(or_gate,
                                                    w_children(3,
                                                               create_leaf("λ", 1E-6),
-                                                              create_leaf("B", 3E-6),
-                                                              create_leaf("C", 4E-6)
+                                                              create_leaf("C", 3E-6),
+                                                              create_leaf("B", 4E-6)
                                                               )
                                                    ),
                                        create_node(and_gate,
                                                    w_children(2,
                                                               create_leaf("λ", 1E-6),
-                                                              create_leaf("D", 2E-6)
+                                                              create_leaf("A", 2E-6)
                                                               )
                                                    )
                                        )
@@ -107,5 +125,8 @@ int main() {
   independent_evaluation(root);
   
   // run a Monte Carlo simulation
-  dependent_evaluation(root, 1E9);
+  dependent_evaluation(root, 1E4);
+  
+  // calculate true probabilities exaustively
+  true_evaluation(root);
 }

@@ -10,22 +10,29 @@ typedef struct Simulacron Simulacron;
 
 typedef struct Simulacron {
   
-  long threshold;
+  long failures;         // total number of failures acumulated
+  long trials;           // total number of trials this simulacron has undergone
   
-  long failures;
-  long trials;
+  bool failed;           // current state during evaluation
+  bool evaluated;        // whether this simulacron has been evaluated
+  
+  long threshold;        // inverse the probability of failure. Used for rand()
 
-  bool failed;    // current state during evaluation
-  bool evaluated;
-  
+  // used for advanced simulation
+  double probability;    // probability from leaf
+   
 } Simulacron;
 
-Hashmap * simulation;
 
-Simulacron * create_simulacron(Node * node);
+Hashmap * simulation;         // map associating names to simulacrons
 
-void prepare_for_simulation(Node * root);
+List * leaf_simulacrons;      // all leaf simulacrons (for advanced Monte Carlo)
+
+void prepare_tree(Node * root, bool simulating);
 
 void monte_carlo(Node * root, long trials);
+double monte_carlo_advanced(Node * root, long trials);
+
+double exaustive_calculation(Node * root);
 
 #endif
