@@ -191,7 +191,7 @@ double exaustive_calculation(Node * root) {
       Simulacron * sim = (Simulacron *) (leaf -> value);
       
       sim -> failed = (s & (1 << l)) >> l++;
-
+      
       trial_likelihood *= (sim -> failed) * (sim -> probability) + (!sim -> failed) * (1 - sim -> probability);
     }
     

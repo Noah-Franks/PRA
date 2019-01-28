@@ -96,28 +96,33 @@ void true_evaluation(Node * root) {
   printf("\nMission failure probability: " CONSOLE_RED "%E\n" CONSOLE_RESET, mission_failure_probability);
 }
 
+#define crn create_node 
+#define w_c w_children
+#define and and_gate
+#define or   or_gate
+
 int main() {
   
   init_hashmap();    // sets up probability map for Monte Carlo simulations
   
   
-  Node * root = create_node(and_gate,
-                            w_children(2,
-                                       create_node(or_gate,
-                                                   w_children(3,
-                                                              create_leaf("λ", 1E-6),
-                                                              create_leaf("C", 3E-6),
-                                                              create_leaf("B", 4E-6)
-                                                              )
-                                                   ),
-                                       create_node(and_gate,
-                                                   w_children(2,
-                                                              create_leaf("λ", 1E-6),
-                                                              create_leaf("A", 2E-6)
-                                                              )
-                                                   )
-                                       )
-                            );
+  Node * root = crn(and,
+                    w_c(2,
+                        crn(or,
+                            w_c(3,
+                                create_leaf("λ", 1E-6),
+                                create_leaf("C", 3E-6),
+                                create_leaf("B", 4E-6)
+                                )
+                            ),
+                        crn(and,
+                            w_c(2,
+                                create_leaf("λ", 1E-6),
+                                create_leaf("A", 2E-6)
+                                )
+                            )
+                        )
+                    );
   
   
   // give names to branches
